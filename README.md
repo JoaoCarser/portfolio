@@ -5,7 +5,8 @@
 - Aprofundando: Airflow • Terraform • dbt (orquestração e qualidade) <br>
 - Impacto: eliminei 11–22h/mês de trabalho manual em rotinas críticas
 
-[![Currículo](https://img.shields.io/badge/Curr%C3%ADculo-PDF-%23000000.svg?style=for-the-badge&logo=googledrive&logoColor=white)](https://drive.google.com/file/d/1kZRMRo5tjROdzX4aFfCtRc0HlElKMs0R/view?usp=sharing)
+
+[![Currículo](https://img.shields.io/badge/Curr%C3%ADculo-PDF-00C853?style=for-the-badge&logo=googledrive&logoColor=white)](https://drive.google.com/file/d/1kZRMRo5tjROdzX4aFfCtRc0HlElKMs0R/view?usp=sharing)
 
 ## 🚀 Projetos em destaque
 - 💸 **[Conterp Paid Sync](https://github.com/JoaoCarser/conterp-paid-sync)** — sincronização Alterdata (Bimer) → Monday (AWS + Docker + cron + logs)
