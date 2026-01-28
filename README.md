@@ -1,16 +1,17 @@
 # 💫 About Me:
 - Trabalho com: pipelines em AWS (Python) integrando sistemas via APIs <br>
-- Lidero: automações e engenharia de dados em produção (Docker + cron + logs) <br>
-- Busco: oportunidades remotas como Eng. de Dados/Automação (AWS, APIs, Docker) <br>
+- Lidero: automações e engenharia de dados em produção (Docker + Airflow + logs) <br>
+- Busco: oportunidades remotas como Eng. de Dados/Automação (AWS, APIs, Docker, Databricks, pySpark) <br>
 - Aprofundando: Airflow • Terraform • dbt (orquestração e qualidade) <br>
 - Impacto: eliminei 11–22h/mês de trabalho manual em rotinas críticas
 
-
-[![Currículo](https://img.shields.io/badge/Curr%C3%ADculo-PDF-00C853?style=for-the-badge&logo=googledrive&logoColor=white)](https://drive.google.com/file/d/1kZRMRo5tjROdzX4aFfCtRc0HlElKMs0R/view?usp=sharing)
+## 📄 Currículo
+[![Currículo](https://img.shields.io/badge/Curr%C3%ADculo-PDF-00C853?style=for-the-badge&logo=googledrive&logoColor=white)](https://drive.google.com/file/d/1A_mhdW5vBfoc6BsH5OjXMW_g38A27kvq/view?usp=sharing)
 
 ## 🚀 Projetos em destaque
 - 💸 **[Conterp Paid Sync](https://github.com/JoaoCarser/conterp-paid-sync)** — sincronização Alterdata (Bimer) → Monday (AWS + Docker + cron + logs)
 - 🧾 **[Conterp Payable Sync](https://github.com/JoaoCarser/conterp-payable-sync)** — contas a pagar + regras de vencimento + deduplicação/idempotência
+- 🌬️ **[Airflow](https://github.com/JoaoCarser/data-airflow)** — orquestração de pipelines em produção (Airflow na EC2 + RDS + Docker Compose + logs no S3)
 
 
 ## 🌐 Socials:
