@@ -4,6 +4,7 @@
 - Busco: oportunidades remotas como Eng. de Dados/Automação (AWS, APIs, Docker, Databricks, pySpark) <br>
 - Aprofundando: Airflow • Terraform • dbt (orquestração e qualidade) <br>
 - Impacto: eliminei 11–22h/mês de trabalho manual em rotinas críticas
+- Impacto: **eliminei trabalho manual** (~11–22h/mês) e **otimizei custos de infra** reduzi o **RDS do Airflow** de ~US$ 1.400/mês para ~US$ 150–160/mês (**economia > US$ 1.200/mês**)  
 
 ## 📄 Currículo
 [![Currículo](https://img.shields.io/badge/Curr%C3%ADculo-PDF-00C853?style=for-the-badge&logo=googledrive&logoColor=white)](https://drive.google.com/file/d/1A_mhdW5vBfoc6BsH5OjXMW_g38A27kvq/view?usp=sharing)
