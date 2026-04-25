@@ -274,7 +274,7 @@ function initParticles() {
 function initTypewriter() {
   const el = document.querySelector('.typewriter-text');
   if (!el) return;
-  const text = '// projetos em produÃ§Ã£o desde 2025';
+  const text = '// projetos em produção desde 2025';
   let i = 0;
   el.textContent = '';
 
