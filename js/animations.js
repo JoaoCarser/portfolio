@@ -19,7 +19,6 @@ function initStars() {
       x: Math.random() * window.innerWidth,
       y: Math.random() * window.innerHeight,
       r: Math.random() * 1.2 + .3,
-      a: Math.random(),
       speed: Math.random() * .005 + .002,
       phase: Math.random() * Math.PI * 2
     });
@@ -29,7 +28,7 @@ function initStars() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const t = Date.now() * .001;
     stars.forEach(s => {
-      const alpha = (.3 + .7 * Math.abs(Math.sin(t * s.speed * 60 + s.phase)));
+      const alpha = .3 + .7 * Math.abs(Math.sin(t * s.speed * 60 + s.phase));
       ctx.beginPath();
       ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(200,180,255,${alpha * .6})`;
@@ -61,7 +60,6 @@ function initCursor() {
   if (!dot || !ring) return;
 
   let mx = -100, my = -100, rx = -100, ry = -100;
-
   window.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; }, { passive: true });
 
   function animateCursor() {
@@ -107,16 +105,46 @@ function initNav() {
 }
 
 /* ============================================================
+   SPLIT TITLE ANIMATION
+   Wraps each word in overflow:hidden + animated inner span
+   ============================================================ */
+function splitTitles() {
+  document.querySelectorAll('.section-title').forEach(el => {
+    el.classList.add('split-title');
+    const text = el.innerHTML;
+    // wrap words, preserve <br> tags
+    el.innerHTML = text
+      .split(/(<br\s*\/?>|\n)/)
+      .map(chunk => {
+        if (/^<br/.test(chunk) || chunk === '\n') return chunk;
+        return chunk.split(' ').filter(Boolean).map(word =>
+          `<span class="word-wrap"><span class="word-inner">${word}</span></span>`
+        ).join(' ');
+      })
+      .join('');
+  });
+}
+
+/* ============================================================
    REVEALS (Intersection Observer)
    ============================================================ */
 function initReveals() {
   const io = new IntersectionObserver(entries => {
     entries.forEach(e => {
-      if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        io.unobserve(e.target);
+      }
     });
   }, { threshold: .12 });
 
-  document.querySelectorAll('.reveal, .reveal-left, .reveal-scale, .reveal-clip').forEach(el => io.observe(el));
+  document.querySelectorAll(
+    '.reveal, .reveal-left, .reveal-scale, .reveal-clip, .split-title, .section-line'
+  ).forEach(el => {
+    // Pipeline panels are handled by initPipeline with stagger â€” skip them here
+    if (el.closest('#pipeline-track')) return;
+    io.observe(el);
+  });
 }
 
 /* ============================================================
@@ -124,24 +152,24 @@ function initReveals() {
    ============================================================ */
 function initHeroStagger() {
   const items = [
-    ['.hero-badge',   100],
-    ['.hero-photo',   150],
-    ['.hero-name',    200],
-    ['.hero-role',    300],
-    ['.hero-bio',     400],
-    ['.hero-ctas',    500],
-    ['.hero-scroll',  700],
+    ['.hero-badge',  100],
+    ['.hero-photo',  150],
+    ['.hero-name',   220],
+    ['.hero-role',   320],
+    ['.hero-bio',    420],
+    ['.hero-ctas',   520],
+    ['.hero-scroll', 720],
   ];
   items.forEach(([sel, delay]) => {
     const el = document.querySelector(sel);
     if (!el) return;
     el.style.transitionDelay = delay + 'ms';
-    setTimeout(() => el.classList.add('visible'), 50);
+    setTimeout(() => el.classList.add('visible'), 80);
   });
 }
 
 /* ============================================================
-   TEXT SCRAMBLE
+   TEXT SCRAMBLE (hero name)
    ============================================================ */
 function scrambleText(el, finalText, duration = 900) {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%';
@@ -151,9 +179,9 @@ function scrambleText(el, finalText, duration = 900) {
   const interval = setInterval(() => {
     el.textContent = finalText.split('').map((ch, i) => {
       if (ch === ' ') return ' ';
-      const reveal = frame / totalFrames;
-      if (i / finalText.length < reveal) return ch;
-      return chars[Math.floor(Math.random() * chars.length)];
+      return (i / finalText.length < frame / totalFrames)
+        ? ch
+        : chars[Math.floor(Math.random() * chars.length)];
     }).join('');
     frame++;
     if (frame > totalFrames) { el.textContent = finalText; clearInterval(interval); }
@@ -167,9 +195,7 @@ function initGear() {
   const gear = document.querySelector('.gear-svg');
   if (!gear) return;
   const io = new IntersectionObserver(entries => {
-    entries.forEach(e => {
-      if (e.isIntersecting) gear.classList.add('spinning');
-    });
+    entries.forEach(e => { if (e.isIntersecting) gear.classList.add('spinning'); });
   }, { threshold: .5 });
   io.observe(gear);
 }
@@ -193,22 +219,16 @@ function initCounters() {
       const prefix  = numEl.dataset.prefix || '';
       const suffix  = numEl.dataset.suffix || '';
       const start   = Date.now();
-      const duration = 1400;
+      const dur     = 1400;
 
-      function tick() {
-        const elapsed  = Date.now() - start;
-        const progress = Math.min(elapsed / duration, 1);
-        const val      = easeOutCubic(progress) * target;
-        let display;
-        if (isK) {
-          display = 'US$' + (val >= 1000 ? (val / 1000).toFixed(1) + 'k' : Math.round(val));
-        } else {
-          display = prefix + Math.round(val) + suffix;
-        }
-        numEl.textContent = display;
-        if (progress < 1) requestAnimationFrame(tick);
-      }
-      tick();
+      (function tick() {
+        const p   = Math.min((Date.now() - start) / dur, 1);
+        const val = easeOutCubic(p) * target;
+        numEl.textContent = isK
+          ? 'US$' + (val >= 1000 ? (val / 1000).toFixed(1) + 'k' : Math.round(val))
+          : prefix + Math.round(val) + suffix;
+        if (p < 1) requestAnimationFrame(tick);
+      })();
     });
   }, { threshold: .4 });
 
@@ -216,16 +236,14 @@ function initCounters() {
 }
 
 /* ============================================================
-   3D TILT on metric cards
+   3D TILT â€” metric cards
    ============================================================ */
 function initTilt() {
   document.querySelectorAll('.metric-card').forEach(card => {
     card.addEventListener('mousemove', e => {
       const r  = card.getBoundingClientRect();
-      const cx = r.left + r.width / 2;
-      const cy = r.top  + r.height / 2;
-      const rx = ((e.clientY - cy) / (r.height / 2)) * -6;
-      const ry = ((e.clientX - cx) / (r.width  / 2)) * 6;
+      const rx = ((e.clientY - r.top  - r.height / 2) / (r.height / 2)) * -6;
+      const ry = ((e.clientX - r.left - r.width  / 2) / (r.width  / 2)) * 6;
       card.style.transform = `perspective(600px) rotateX(${rx}deg) rotateY(${ry}deg)`;
     });
     card.addEventListener('mouseleave', () => { card.style.transform = ''; });
@@ -242,8 +260,7 @@ function initParticles() {
     entries.forEach(e => {
       if (!e.isIntersecting) return;
       io.unobserve(wrap);
-      const particles = wrap.querySelectorAll('.particle');
-      particles.forEach((p, i) => {
+      wrap.querySelectorAll('.particle').forEach((p, i) => {
         setTimeout(() => p.classList.add('fired'), i * 40);
       });
     });
@@ -257,9 +274,8 @@ function initParticles() {
 function initTypewriter() {
   const el = document.querySelector('.typewriter-text');
   if (!el) return;
-  const text    = '// projetos em produção desde 2024';
-  const speed   = 50;
-  let   i       = 0;
+  const text = '// projetos em produÃ§Ã£o desde 2025';
+  let i = 0;
   el.textContent = '';
 
   const io = new IntersectionObserver(entries => {
@@ -270,7 +286,7 @@ function initTypewriter() {
         el.textContent = text.slice(0, i);
         i++;
         if (i > text.length) clearInterval(interval);
-      }, speed);
+      }, 50);
     });
   }, { threshold: .5 });
   io.observe(el);
@@ -284,70 +300,42 @@ function initMagnetic() {
     const wrap = btn.parentElement;
     wrap.addEventListener('mousemove', e => {
       const r  = btn.getBoundingClientRect();
-      const cx = r.left + r.width / 2;
-      const cy = r.top  + r.height / 2;
-      const dx = (e.clientX - cx) * .25;
-      const dy = (e.clientY - cy) * .25;
-      btn.style.transform = `translate(${dx}px, ${dy}px) translateY(-2px)`;
+      btn.style.transform = `translate(${(e.clientX - r.left - r.width  / 2) * .28}px,${(e.clientY - r.top - r.height / 2) * .28}px) translateY(-2px)`;
     });
     wrap.addEventListener('mouseleave', () => { btn.style.transform = ''; });
   });
 }
 
 /* ============================================================
-   PIPELINE HORIZONTAL (GSAP)
+   PIPELINE â€” stagger reveal (all 4 appear sequentially, stay on screen)
+   Uses IntersectionObserver on the track container.
+   CSS transition-delay on each .pipeline-panel creates the stagger.
    ============================================================ */
 function initPipeline() {
-  if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') return;
-  gsap.registerPlugin(ScrollTrigger);
-
-  const isMobile = window.innerWidth < 768;
-  const section  = document.querySelector('.pipeline-section');
-  const track    = document.querySelector('.pipeline-track');
-  if (!section || !track) return;
-
-  if (!isMobile) {
-    gsap.to(track, {
-      x: () => -(track.scrollWidth - window.innerWidth),
-      ease: 'none',
-      scrollTrigger: {
-        trigger: section,
-        pin: true,
-        scrub: 1.2,
-        start: 'top top',
-        end: 'bottom top',
-        anticipatePin: 1,
-        onUpdate: self => updatePipelineDots(self.progress)
-      }
-    });
-  } else {
-    section.style.height = 'auto';
-    track.style.width = '100%';
-    track.style.flexDirection = 'column';
-    track.style.height = 'auto';
-  }
-
-  ScrollTrigger.addEventListener('refreshInit', () => {
-    const mobile = window.innerWidth < 768;
-    if (mobile) {
-      section.style.height = 'auto';
-      track.style.width = '100%';
-      track.style.flexDirection = 'column';
-    }
+  const track = document.getElementById('pipeline-track');
+  if (!track) return;
+  const panels = track.querySelectorAll('.pipeline-panel');
+  const delays = [0, 180, 340, 500];
+  panels.forEach((panel, i) => {
+    panel.style.transitionDelay = delays[i] + 'ms';
   });
-}
 
-function updatePipelineDots(progress) {
-  const dots  = document.querySelectorAll('.pipeline-dot');
-  const total = dots.length;
-  const active = Math.min(Math.floor(progress * total), total - 1);
-  dots.forEach((d, i) => d.classList.toggle('active', i === active));
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      io.unobserve(track);
+      panels.forEach(p => p.classList.add('visible'));
+    });
+  }, { threshold: .15 });
+
+  io.observe(track);
 }
 
 /* ============================================================
    INIT ALL
    ============================================================ */
 function initAll() {
+  splitTitles();    // must run before reveals
   initStars();
   initProgressBar();
   initCursor();
@@ -363,9 +351,9 @@ function initAll() {
   initMagnetic();
   initPipeline();
 
-  /* scramble hero name after stagger reveals */
+  // Scramble hero name after stagger
   setTimeout(() => {
-    const nameEl = document.querySelector('.hero-name .scramble');
-    if (nameEl) scrambleText(nameEl, 'Carser', 900);
+    const el = document.querySelector('.hero-name .scramble');
+    if (el) scrambleText(el, 'Carser', 900);
   }, 400);
 }
