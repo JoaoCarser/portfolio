@@ -14,24 +14,24 @@ function initStars() {
   resize();
   window.addEventListener('resize', resize);
 
-  for (let i = 0; i < 120; i++) {
+  for (let i = 0; i < 130; i++) {
     stars.push({
       x: Math.random() * window.innerWidth,
       y: Math.random() * window.innerHeight,
-      r: Math.random() * 1.2 + .3,
-      speed: Math.random() * .005 + .002,
-      phase: Math.random() * Math.PI * 2
+      r: Math.random() * 1.1 + 0.2,
+      speed: Math.random() * 0.005 + 0.002,
+      phase: Math.random() * Math.PI * 2,
     });
   }
 
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const t = Date.now() * .001;
+    const t = Date.now() * 0.001;
     stars.forEach(s => {
-      const alpha = .3 + .7 * Math.abs(Math.sin(t * s.speed * 60 + s.phase));
+      const alpha = 0.25 + 0.75 * Math.abs(Math.sin(t * s.speed * 60 + s.phase));
       ctx.beginPath();
       ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(200,180,255,${alpha * .6})`;
+      ctx.fillStyle = `rgba(200,180,255,${alpha * 0.55})`;
       ctx.fill();
     });
     requestAnimationFrame(draw);
@@ -65,32 +65,18 @@ function initCursor() {
   function animateCursor() {
     dot.style.left  = mx + 'px';
     dot.style.top   = my + 'px';
-    rx += (mx - rx) * .12;
-    ry += (my - ry) * .12;
+    rx += (mx - rx) * 0.12;
+    ry += (my - ry) * 0.12;
     ring.style.left = rx + 'px';
     ring.style.top  = ry + 'px';
     requestAnimationFrame(animateCursor);
   }
   animateCursor();
 
-  document.querySelectorAll('a, button, .btn, .stack-tag, .metric-card').forEach(el => {
+  document.querySelectorAll('a, button, .btn, .stack-tag, .metric-card, .about-block, .dock-item').forEach(el => {
     el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
     el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
   });
-}
-
-/* ============================================================
-   ORB PARALLAX
-   ============================================================ */
-function initOrbs() {
-  const orbs = document.querySelectorAll('.orb');
-  window.addEventListener('scroll', () => {
-    const y = window.scrollY;
-    orbs.forEach((orb, i) => {
-      const speed = [.04, -.03, .05][i] || .03;
-      orb.style.transform = `translateY(${y * speed}px)`;
-    });
-  }, { passive: true });
 }
 
 /* ============================================================
@@ -105,71 +91,7 @@ function initNav() {
 }
 
 /* ============================================================
-   SPLIT TITLE ANIMATION
-   Wraps each word in overflow:hidden + animated inner span
-   ============================================================ */
-function splitTitles() {
-  document.querySelectorAll('.section-title').forEach(el => {
-    el.classList.add('split-title');
-    const text = el.innerHTML;
-    // wrap words, preserve <br> tags
-    el.innerHTML = text
-      .split(/(<br\s*\/?>|\n)/)
-      .map(chunk => {
-        if (/^<br/.test(chunk) || chunk === '\n') return chunk;
-        return chunk.split(' ').filter(Boolean).map(word =>
-          `<span class="word-wrap"><span class="word-inner">${word}</span></span>`
-        ).join(' ');
-      })
-      .join('');
-  });
-}
-
-/* ============================================================
-   REVEALS (Intersection Observer)
-   ============================================================ */
-function initReveals() {
-  const io = new IntersectionObserver(entries => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        e.target.classList.add('visible');
-        io.unobserve(e.target);
-      }
-    });
-  }, { threshold: .12 });
-
-  document.querySelectorAll(
-    '.reveal, .reveal-left, .reveal-scale, .reveal-clip, .split-title, .section-line'
-  ).forEach(el => {
-    // Pipeline panels are handled by initPipeline with stagger â€” skip them here
-    if (el.closest('#pipeline-track')) return;
-    io.observe(el);
-  });
-}
-
-/* ============================================================
-   STAGGER DELAYS (hero on load)
-   ============================================================ */
-function initHeroStagger() {
-  const items = [
-    ['.hero-badge',  100],
-    ['.hero-photo',  150],
-    ['.hero-name',   220],
-    ['.hero-role',   320],
-    ['.hero-bio',    420],
-    ['.hero-ctas',   520],
-    ['.hero-scroll', 720],
-  ];
-  items.forEach(([sel, delay]) => {
-    const el = document.querySelector(sel);
-    if (!el) return;
-    el.style.transitionDelay = delay + 'ms';
-    setTimeout(() => el.classList.add('visible'), 80);
-  });
-}
-
-/* ============================================================
-   TEXT SCRAMBLE (hero name)
+   TEXT SCRAMBLE
    ============================================================ */
 function scrambleText(el, finalText, duration = 900) {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%';
@@ -189,18 +111,6 @@ function scrambleText(el, finalText, duration = 900) {
 }
 
 /* ============================================================
-   GEAR TRANSITION
-   ============================================================ */
-function initGear() {
-  const gear = document.querySelector('.gear-svg');
-  if (!gear) return;
-  const io = new IntersectionObserver(entries => {
-    entries.forEach(e => { if (e.isIntersecting) gear.classList.add('spinning'); });
-  }, { threshold: .5 });
-  io.observe(gear);
-}
-
-/* ============================================================
    METRICS COUNTERS
    ============================================================ */
 function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
@@ -213,30 +123,29 @@ function initCounters() {
     entries.forEach(e => {
       if (!e.isIntersecting) return;
       io.unobserve(e.target);
-      const numEl   = e.target.querySelector('.metric-num');
-      const target  = parseFloat(numEl.dataset.target);
-      const isK     = numEl.dataset.format === 'k';
-      const prefix  = numEl.dataset.prefix || '';
-      const suffix  = numEl.dataset.suffix || '';
-      const start   = Date.now();
-      const dur     = 1400;
+      const numEl  = e.target.querySelector('.metric-num');
+      if (!numEl) return;
+      const target = parseFloat(numEl.dataset.target);
+      const isK    = numEl.dataset.format === 'k';
+      const start  = Date.now();
+      const dur    = 1400;
 
       (function tick() {
         const p   = Math.min((Date.now() - start) / dur, 1);
         const val = easeOutCubic(p) * target;
         numEl.textContent = isK
           ? 'US$' + (val >= 1000 ? (val / 1000).toFixed(1) + 'k' : Math.round(val))
-          : prefix + Math.round(val) + suffix;
+          : Math.round(val);
         if (p < 1) requestAnimationFrame(tick);
       })();
     });
-  }, { threshold: .4 });
+  }, { threshold: 0.4 });
 
   cards.forEach(c => io.observe(c));
 }
 
 /* ============================================================
-   3D TILT â€” metric cards
+   3D TILT — metric cards
    ============================================================ */
 function initTilt() {
   document.querySelectorAll('.metric-card').forEach(card => {
@@ -264,17 +173,17 @@ function initParticles() {
         setTimeout(() => p.classList.add('fired'), i * 40);
       });
     });
-  }, { threshold: .5 });
+  }, { threshold: 0.5 });
   io.observe(wrap);
 }
 
 /* ============================================================
-   TYPEWRITER TRANSITION
+   TYPEWRITER
    ============================================================ */
 function initTypewriter() {
   const el = document.querySelector('.typewriter-text');
   if (!el) return;
-  const text = '// projetos em produção desde 2025';
+  const text = '// pipelines em produção desde 2025';
   let i = 0;
   el.textContent = '';
 
@@ -286,9 +195,9 @@ function initTypewriter() {
         el.textContent = text.slice(0, i);
         i++;
         if (i > text.length) clearInterval(interval);
-      }, 50);
+      }, 46);
     });
-  }, { threshold: .5 });
+  }, { threshold: 0.5 });
   io.observe(el);
 }
 
@@ -299,61 +208,32 @@ function initMagnetic() {
   document.querySelectorAll('.btn-magnetic .btn').forEach(btn => {
     const wrap = btn.parentElement;
     wrap.addEventListener('mousemove', e => {
-      const r  = btn.getBoundingClientRect();
-      btn.style.transform = `translate(${(e.clientX - r.left - r.width  / 2) * .28}px,${(e.clientY - r.top - r.height / 2) * .28}px) translateY(-2px)`;
+      const r = btn.getBoundingClientRect();
+      btn.style.transform = `translate(${(e.clientX - r.left - r.width / 2) * 0.28}px,${(e.clientY - r.top - r.height / 2) * 0.28}px) translateY(-2px)`;
     });
     wrap.addEventListener('mouseleave', () => { btn.style.transform = ''; });
   });
 }
 
 /* ============================================================
-   PIPELINE â€” stagger reveal (all 4 appear sequentially, stay on screen)
-   Uses IntersectionObserver on the track container.
-   CSS transition-delay on each .pipeline-panel creates the stagger.
-   ============================================================ */
-function initPipeline() {
-  const track = document.getElementById('pipeline-track');
-  if (!track) return;
-  const panels = track.querySelectorAll('.pipeline-panel');
-  const delays = [0, 180, 340, 500];
-  panels.forEach((panel, i) => {
-    panel.style.transitionDelay = delays[i] + 'ms';
-  });
-
-  const io = new IntersectionObserver(entries => {
-    entries.forEach(e => {
-      if (!e.isIntersecting) return;
-      io.unobserve(track);
-      panels.forEach(p => p.classList.add('visible'));
-    });
-  }, { threshold: .15 });
-
-  io.observe(track);
-}
-
-/* ============================================================
    INIT ALL
    ============================================================ */
 function initAll() {
-  splitTitles();    // must run before reveals
   initStars();
   initProgressBar();
   initCursor();
-  initOrbs();
   initNav();
-  initReveals();
-  initHeroStagger();
-  initGear();
   initCounters();
   initTilt();
   initParticles();
   initTypewriter();
   initMagnetic();
-  initPipeline();
 
-  // Scramble hero name after stagger
-  setTimeout(() => {
-    const el = document.querySelector('.hero-name .scramble');
-    if (el) scrambleText(el, 'Carser', 900);
-  }, 400);
+  // Scramble hero name after intro finishes
+  document.addEventListener('intro:complete', () => {
+    setTimeout(() => {
+      const el = document.querySelector('.hero-name .scramble');
+      if (el) scrambleText(el, 'Carser', 900);
+    }, 450);
+  }, { once: true });
 }
