@@ -1,62 +1,56 @@
-const COMPONENTS = ['hero', 'about', 'stack', 'pipeline', 'projects', 'metrics', 'contact'];
+const COMPONENTS = ['hero', 'metrics', 'projects', 'pipeline', 'stack', 'contact'];
 
 const DATA_TRANSITIONS = [
   {
-    file: 'raw_data.csv',
+    // Hero → Metrics
+    file: 'compute_kpis.sql',
     lines: [
-      { text: 'id     name      email          date',       cls: 'c-dim'    },
-      { text: 'null   "João "   "joao@"        ??/??/????', cls: 'c-amber'  },
-      { text: '1       ——        ——            "2024"',     cls: 'c-red'    },
-      { text: 'ERROR: schema errors detected: 3',           cls: 'c-red'    },
+      { text: 'SELECT SUM(cost_saved), AVG(hours_freed)', cls: 'c-purple' },
+      { text: "FROM pipeline_runs WHERE status = 'SUCCESS'", cls: 'c-purple' },
+      { text: '──────────────────────────────────────────', cls: 'c-dim'    },
+      { text: 'cost_saved: US$1.200/mo | hours: 22h/mo',   cls: 'c-teal'   },
     ],
-    status: { text: '→ starting validation process...', cls: 'c-amber' },
+    status: { text: '→ aggregating impact metrics...', cls: 'c-teal' },
   },
   {
-    file: 'validate.py',
-    lines: [
-      { text: '$ python validate.py raw_data.csv',   cls: 'c-dim'    },
-      { text: 'Checking schema...  ████░░░░',         cls: 'c-purple' },
-      { text: 'Missing values: 47 | Duplicates: 12', cls: 'c-amber'  },
-    ],
-    status: { text: '→ selecting the right tools...', cls: 'c-purple' },
-  },
-  {
-    file: 'transform.py',
-    lines: [
-      { text: "df = pd.read_csv('raw_data.csv')",          cls: 'c-purple' },
-      { text: 'df = df.dropna().drop_duplicates()',         cls: 'c-purple' },
-      { text: "df['date'] = pd.to_datetime(df['date'])",   cls: 'c-purple' },
-      { text: '→ 1.247 rows → 1.189 rows  ✓ clean',       cls: 'c-teal'   },
-    ],
-    status: { text: '→ building the pipeline...', cls: 'c-purple' },
-  },
-  {
-    file: 'airflow_dag.py',
+    // Metrics → Projects
+    file: 'pipeline_run.log',
     lines: [
       { text: '[airflow] DAG: data_pipeline_prod',   cls: 'c-dim'    },
       { text: 'extract  ✓   transform  ✓   load  ✓', cls: 'c-teal'   },
       { text: 'duration: 4m32s  |  status: SUCCESS', cls: 'c-teal'   },
     ],
-    status: { text: '→ deploying to production...', cls: 'c-purple' },
+    status: { text: '→ pipelines in production...', cls: 'c-teal' },
   },
   {
-    file: 'results.sql',
+    // Projects → Pipeline
+    file: 'raw_data.csv',
     lines: [
-      { text: "SELECT COUNT(*), SUM(cost_saved)",           cls: 'c-purple' },
-      { text: "FROM pipelines WHERE status = 'running'",    cls: 'c-purple' },
-      { text: '──────────────────────────────────',         cls: 'c-dim'    },
-      { text: '4 pipelines  |  US$ 1.200/mo saved',        cls: 'c-teal'   },
+      { text: 'id     name      email          date',       cls: 'c-dim'   },
+      { text: 'null   "João "   "joao@"        ??/??/????', cls: 'c-amber' },
+      { text: 'ERROR: schema errors detected: 3',           cls: 'c-red'   },
     ],
-    status: { text: '→ aggregating results...', cls: 'c-teal' },
+    status: { text: '→ tracing the methodology...', cls: 'c-amber' },
   },
   {
-    file: 'final_report.json',
+    // Pipeline → Stack
+    file: 'transform.py',
     lines: [
-      { text: '{',                               cls: 'c-dim'    },
-      { text: '  "pipelines_in_prod": 4,',       cls: 'c-teal'   },
-      { text: '  "cost_reduction": "90%",',      cls: 'c-teal'   },
-      { text: '  "status": "operational"',       cls: 'c-teal'   },
-      { text: '}',                               cls: 'c-dim'    },
+      { text: "df = pd.read_csv('raw_data.csv')",        cls: 'c-purple' },
+      { text: 'df = df.dropna().drop_duplicates()',       cls: 'c-purple' },
+      { text: '→ 1.247 rows → 1.189 rows  ✓ clean',     cls: 'c-teal'   },
+    ],
+    status: { text: '→ selecting the right tools...', cls: 'c-purple' },
+  },
+  {
+    // Stack → Contact
+    file: 'status.json',
+    lines: [
+      { text: '{',                              cls: 'c-dim'  },
+      { text: '  "pipelines_in_prod": 4,',      cls: 'c-teal' },
+      { text: '  "cost_reduction": "90%",',     cls: 'c-teal' },
+      { text: '  "status": "operational"',      cls: 'c-teal' },
+      { text: '}',                              cls: 'c-dim'  },
     ],
     status: { text: '→ all systems running  ✓', cls: 'c-teal' },
   },
@@ -103,12 +97,56 @@ async function loadComponent(name) {
   return res.text();
 }
 
+const PREVIEW_HTML = [
+  `<div class="project-preview">
+    <div class="pp-infra">
+      <div class="pp-infra-node">EC2</div>
+      <div class="pp-infra-line"></div>
+      <div class="pp-infra-node">RDS</div>
+      <div class="pp-infra-line"></div>
+      <div class="pp-infra-node">S3</div>
+    </div>
+    <div class="pp-saving">US$ 1.500 <span class="pp-arrow-txt">→</span> <span class="pp-teal-txt">US$ 150 / mês</span></div>
+  </div>`,
+
+  `<div class="project-preview">
+    <div class="pp-sync-row">
+      <div class="pp-sys-box">Alterdata</div>
+      <div class="pp-flow-track"><div class="pp-flow-dot"></div></div>
+      <div class="pp-sys-box">Monday</div>
+    </div>
+    <div class="pp-stat-line">22h / mês eliminadas</div>
+  </div>`,
+
+  `<div class="project-preview">
+    <div class="pp-table">
+      <div class="pp-row pp-dirty"><span>null</span><span>ERROR</span><span class="pp-x">×</span></div>
+      <div class="pp-row pp-dirty"><span>null</span><span>INVALID</span><span class="pp-x">×</span></div>
+      <div class="pp-row pp-clean"><span>id_001</span><span>Sonda A</span><span class="pp-check">✓</span></div>
+      <div class="pp-row pp-clean"><span>id_002</span><span>Sonda B</span><span class="pp-check">✓</span></div>
+    </div>
+  </div>`,
+
+  `<div class="project-preview">
+    <div class="pp-access">
+      <div class="pp-access-hub">DADOS</div>
+      <div class="pp-access-sectors">
+        <span class="pp-sec">Setor A</span>
+        <span class="pp-sec">Setor B</span>
+        <span class="pp-sec">Setor C</span>
+        <span class="pp-sec">Setor D</span>
+      </div>
+    </div>
+  </div>`,
+];
+
 function renderProjects() {
   const grid = document.querySelector('.projects-grid');
   if (!grid || typeof PROJECTS === 'undefined') return;
 
   grid.innerHTML = PROJECTS.map((p, i) => `
-    <a class="project-card" href="${p.url}" target="_blank" rel="noopener" style="transition-delay:${(i + 1) * 0.1}s">
+    <a class="project-card" href="${p.url}" target="_blank" rel="noopener">
+      ${PREVIEW_HTML[i] || ''}
       <div class="project-header">
         <span class="project-title">${p.title}</span>
         <span class="project-badge">${p.badge}</span>
@@ -157,6 +195,8 @@ async function boot() {
   initAll();
   initLenis();
   initGSAPAnimations();
+  initHeroCanvas();
+  initHeroParallax();
   initDock();
 }
 

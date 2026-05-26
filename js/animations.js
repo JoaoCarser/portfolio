@@ -116,6 +116,7 @@ function scrambleText(el, finalText, duration = 900) {
 function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
 
 function initCounters() {
+  return; // handled by GSAP scroll-scrub in gsap-animations.js
   const cards = document.querySelectorAll('.metric-card');
   if (!cards.length) return;
 
@@ -145,17 +146,24 @@ function initCounters() {
 }
 
 /* ============================================================
-   3D TILT — metric cards
+   3D TILT — all cards
    ============================================================ */
 function initTilt() {
-  document.querySelectorAll('.metric-card').forEach(card => {
+  const TILT_SELECTORS = '.metric-card, .project-card';
+  document.querySelectorAll(TILT_SELECTORS).forEach(card => {
     card.addEventListener('mousemove', e => {
-      const r  = card.getBoundingClientRect();
-      const rx = ((e.clientY - r.top  - r.height / 2) / (r.height / 2)) * -6;
-      const ry = ((e.clientX - r.left - r.width  / 2) / (r.width  / 2)) * 6;
-      card.style.transform = `perspective(600px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+      const r   = card.getBoundingClientRect();
+      const rx  = ((e.clientY - r.top  - r.height / 2) / (r.height / 2)) * -7;
+      const ry  = ((e.clientX - r.left - r.width  / 2) / (r.width  / 2)) *  7;
+      card.style.transform = `perspective(800px) rotateX(${rx}deg) rotateY(${ry}deg) translateZ(6px)`;
+      card.style.transition = 'transform 0.1s ease, box-shadow 0.1s ease';
+      card.style.boxShadow  = `0 24px 60px rgba(168,85,247,0.14), 0 8px 20px rgba(0,0,0,0.3)`;
     });
-    card.addEventListener('mouseleave', () => { card.style.transform = ''; });
+    card.addEventListener('mouseleave', () => {
+      card.style.transform  = '';
+      card.style.boxShadow  = '';
+      card.style.transition = 'transform 0.4s ease, box-shadow 0.4s ease, border-color 0.3s';
+    });
   });
 }
 
